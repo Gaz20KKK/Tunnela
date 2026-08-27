@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Tunnela</title>
+<meta name="description" content="Skrip Python dan UI ringan untuk menjalankan model gambar lokal, lalu membukanya lewat Cloudflare Tunnel.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2317181B'/%3E%3Cpath d='M9 11h14M16 11v11' stroke='%23ECEDF0' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" aria-label="Navigasi utama">
+<div class="sidebar-head">
+<img src="assets/icon.png" alt="" class="brand-mark">
+<div class="brand-text">Tunnela</div>
+</div>
+<nav class="nav">
+<button class="nav-item active" data-nav="home"><i data-lucide="house"></i><span>Home</span></button>
+<button class="nav-item" data-nav="connect"><i data-lucide="plug"></i><span>Connect</span></button>
+<button class="nav-item" data-nav="workspace"><i data-lucide="panels-top-left"></i><span>Workspace</span></button>
+<button class="nav-item" data-nav="history"><i data-lucide="clock"></i><span>History</span></button>
+<button class="nav-item" data-nav="documentation"><i data-lucide="book-open"></i><span>Docs</span></button>
+</nav>
+<div class="sidebar-foot">
+<div class="status-badge disconnected" id="sidebarStatus">
+<span class="status-dot" aria-hidden="true"></span>
+<span class="status-text">Disconnected</span>
+</div>
+</div>
+</aside>
+<div class="main-wrapper">
+<header class="header">
+<div class="header-left">
+<img src="assets/icon.png" alt="" class="header-mark">
+<div>
+<div class="header-title" id="headerTitle">Home</div>
+<div class="header-subtitle" id="headerSubtitle">Backend lokal, satu link publik</div>
+</div>
+</div>
+<div class="header-right">
+<a class="icon-btn header-gh" href="https://github.com/Gaz20KKK/Tunnela" target="_blank" rel="noopener" aria-label="Repository GitHub"><i data-lucide="code-2"></i></a>
+<div class="status-badge disconnected" id="headerStatus" aria-live="polite">
+<span class="status-dot" aria-hidden="true"></span>
+<span class="status-text">Disconnected</span>
+</div>
+<button class="icon-btn" id="themeToggle" aria-label="Ganti tema"><i data-lucide="moon"></i></button>
+</div>
+</header>
+<main class="main">
+
+<section class="page active" id="page-home" aria-labelledby="homeTitle">
+<div class="hero">
+<div class="hero-copy">
+<div class="hero-eyebrow">Backend lokal + Cloudflare Tunnel</div>
+<h1 id="homeTitle">Model gambar lokal.<br>Satu skrip, <span>satu link.</span></h1>
+<p class="hero-desc">
+<span class="txt-long">tunnela.py menyiapkan lingkungan, menginstal PyTorch sesuai GPU atau CPU kamu, mengunduh model dari HuggingFace atau Civitai, lalu menyajikan API lewat Cloudflare Tunnel. Paste link-nya di sini dan mulai generate.</span>
+<span class="txt-short">Satu skrip untuk setup, unduh model, server, sampai tunnel. Paste link, langsung generate.</span>
+</p>
+<div class="hero-actions">
+<button class="btn btn-primary btn-lg" data-nav="documentation" data-anchor="doc-start"><i data-lucide="terminal"></i> Cara menjalankan</button>
+<button class="btn btn-secondary btn-lg" data-nav="connect"><i data-lucide="plug"></i> Saya punya link</button>
+</div>
+<div class="hero-meta mono">Python 3.9+</div>
+</div>
+<div class="hero-visual">
+<div class="term">
+<div class="term-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span><span class="term-name mono">terminal</span></div>
+<pre class="term-body mono"><span class="t-dim">$</span> python tunnela.py
+<span class="t-tag">[device]</span> NVIDIA RTX 4060 Ti, VRAM 16 GB
+<span class="t-tag">[model ]</span> sd_turbo.safetensors, 2.5 GB
+<span class="t-tag">[server]</span> siap di http://127.0.0.1:7860
+<span class="t-tag">[tunnel]</span> <span class="t-url">https://calm-meadow-9f31.trycloudflare.com</span>
+<span class="t-dim">paste link di atas ke halaman Connect</span></pre>
+</div>
+</div>
+</div>
+</section>
+
+<section class="page" id="page-connect" aria-labelledby="connectTitle">
+<div class="section-head">
+<div>
+<h2 id="connectTitle">Hubungkan backend</h2>
+<p>Tunnela hanya klien. Browser kamu berbicara langsung ke tunnel milikmu sendiri.</p>
+</div>
+</div>
+<div class="connect-layout">
+<div class="card">
+<div class="card-pad flow-pad">
+<h3 class="flow-title">Jalankan backendnya</h3>
+<p class="flow-sub">Salin satu baris ini ke terminal di komputer yang mau dipakai generate.</p>
+<div class="code-block sm">
+<div class="code-label mono">Windows PowerShell</div>
+<pre>irm https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -OutFile tunnela.py; python tunnela.py</pre>
+<button data-copy="irm https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -OutFile tunnela.py; python tunnela.py" aria-label="Copy perintah Windows"><i data-lucide="copy"></i></button>
+</div>
+<div class="code-block sm">
+<div class="code-label mono">macOS / Linux</div>
+<pre>curl -fsSL https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -o tunnela.py && python3 tunnela.py</pre>
+<button data-copy="curl -fsSL https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -o tunnela.py && python3 tunnela.py" aria-label="Copy perintah macOS Linux"><i data-lucide="copy"></i></button>
+</div>
+<ul class="steps-list">
+<li><span class="steps-num">1</span><span>Skrip mendeteksi device, membuat virtualenv, dan menginstal library. Hanya sekali.</span></li>
+<li><span class="steps-num">2</span><span>Kamu diberi pertanyaan link model. Panduan lengkap ada di <a data-nav="documentation" data-anchor="doc-model" href="#">Menyiapkan model</a>.</span></li>
+<li><span class="steps-num">3</span><span>Server hidup, tunnel Cloudflare otomatis dibuat, dan link <span class="mono">trycloudflare.com</span> dicetak di terminal.</span></li>
+</ul>
+</div>
+</div>
+<div class="card">
+<div class="card-pad">
+<h3 class="flow-title">Paste link tunnel</h3>
+<div class="form-group" style="margin-top:12px">
+<label class="form-label" for="tunnelInput">Cloudflare Tunnel URL</label>
+<input class="form-input mono" id="tunnelInput" type="url" placeholder="https://xxxx.trycloudflare.com" autocomplete="off" spellcheck="false">
+<div class="form-hint">Contoh: https://random-words-1234.trycloudflare.com</div>
+<div class="form-error" id="tunnelError"></div>
+</div>
+<div class="connect-actions">
+<button class="btn btn-primary" id="connectBtn"><i data-lucide="plug"></i> Uji koneksi</button>
+<button class="btn btn-ghost" id="forgetBtn"><i data-lucide="trash-2"></i> Lupakan link</button>
+</div>
+<div class="status-panel" id="connectStatus" aria-live="polite" style="display:none">
+<i data-lucide="loader-2"></i><span id="connectStatusText">Menunggu input</span>
+</div>
+<div class="troubleshoot" id="connectTroubleshoot">
+<strong>Gagal terhubung?</strong>
+<ul>
+<li>Pastikan terminal tempat skrip jalan masih terbuka.</li>
+<li>Link harus format <span class="mono">https://...trycloudflare.com</span>.</li>
+<li>Buka link di tab lain. Kalau 502, restart skrip untuk URL baru.</li>
+</ul>
+</div>
+<div id="connectSuccess" style="display:none;margin-top:12px">
+<div class="status-panel success"><i data-lucide="check"></i><span>Terhubung. Server merespons.</span></div>
+<button class="btn btn-primary" data-nav="workspace" style="margin-top:10px;width:100%"><i data-lucide="arrow-right"></i> Lanjut ke Workspace</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="page" id="page-workspace" aria-labelledby="workspaceTitle">
+<div class="banner" id="workspaceBanner" role="alert">
+<div style="display:flex;align-items:center;gap:10px"><i data-lucide="triangle-alert"></i><span>Belum ada backend terhubung. Generate jalan dalam mode demo.</span></div>
+<button class="btn btn-secondary btn-sm" data-nav="connect">Hubungkan</button>
+</div>
+<div class="workspace-layout">
+<div class="workspace-panel">
+<div class="card">
+<div class="card-head">
+<div class="card-title" id="workspaceTitle">Prompt</div>
+<span class="count-hint" id="charCount">0 karakter</span>
+</div>
+<div class="card-pad col-gap-sm">
+<textarea class="form-textarea" id="promptInput" rows="4" placeholder="deskripsi gambar, gaya, pencahayaan"></textarea>
+<div style="display:flex;gap:8px">
+<button class="btn btn-ghost btn-sm" id="clearPromptBtn"><i data-lucide="eraser"></i> Bersihkan</button>
+<button class="btn btn-ghost btn-sm" id="randomPromptBtn"><i data-lucide="shuffle"></i> Contoh</button>
+</div>
+</div>
+</div>
+<div class="collapsible" id="paramCollapsible">
+<button class="collapsible-head" type="button" aria-expanded="false"><span style="display:flex;align-items:center;gap:8px"><i data-lucide="sliders-horizontal"></i> Parameter lanjutan</span><i data-lucide="chevron-down"></i></button>
+<div class="collapsible-body">
+<div class="form-group">
+<label class="form-label" for="negativeInput">Negative prompt</label>
+<textarea class="form-textarea" id="negativeInput" rows="2" placeholder="blurry, low quality"></textarea>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label" for="stepsRange">Steps</label>
+<div class="range-row">
+<input type="range" id="stepsRange" min="1" max="50" value="20">
+<span class="range-val" id="stepsVal">20</span>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label" for="cfgRange">CFG</label>
+<div class="range-row">
+<input type="range" id="cfgRange" min="1" max="20" step="0.5" value="7">
+<span class="range-val" id="cfgVal">7</span>
+</div>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label" for="samplerSelect">Sampler</label>
+<select class="form-select" id="samplerSelect">
+<option value="auto">Auto</option>
+<option value="euler_a">Euler a</option>
+<option value="euler">Euler</option>
+<option value="dpmpp_2m_karras">DPM++ 2M Karras</option>
+<option value="ddim">DDIM</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label" for="seedInput">Seed</label>
+<div style="display:flex;gap:6px">
+<input class="form-input mono" id="seedInput" type="number" value="-1" placeholder="-1 acak">
+<button class="icon-btn sq" id="randomSeedBtn" aria-label="Acak seed"><i data-lucide="dices"></i></button>
+</div>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label" for="widthSelect">Lebar</label>
+<select class="form-select" id="widthSelect"><option>512</option><option selected>768</option><option>1024</option></select>
+</div>
+<div class="form-group">
+<label class="form-label" for="heightSelect">Tinggi</label>
+<select class="form-select" id="heightSelect"><option>512</option><option selected>768</option><option>1024</option></select>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label" for="batchSelect">Batch</label>
+<select class="form-select" id="batchSelect"><option selected>1</option><option>2</option><option>4</option></select>
+</div>
+</div>
+</div>
+<button class="btn btn-primary btn-lg" id="generateBtn" style="width:100%;padding:14px"><i data-lucide="play"></i> Generate <kbd>Ctrl Enter</kbd></button>
+<div class="gen-hint">Hasil auto-save ke History dengan parameter lengkap.</div>
+</div>
+<div class="workspace-canvas">
+<div class="canvas-head">
+<div>
+<div class="canvas-title">Hasil</div>
+<div class="canvas-meta" id="canvasMeta">Belum ada generate</div>
+</div>
+<button class="btn btn-secondary btn-sm" id="clearResultsBtn"><i data-lucide="trash-2"></i> Bersihkan</button>
+</div>
+<div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div>
+<div class="image-grid" id="skeletonGrid" style="display:none"></div>
+<div class="empty-state" id="workspaceEmpty">
+<i data-lucide="image"></i>
+<h3>Belum ada hasil</h3>
+<p>Tulis prompt lalu Generate, atau tekan Ctrl Enter.</p>
+</div>
+<div class="image-grid" id="workspaceGrid" style="display:none"></div>
+</div>
+</div>
+</section>
+
+<section class="page" id="page-history" aria-labelledby="historyTitle">
+<div class="section-head">
+<div>
+<h2 id="historyTitle">History</h2>
+<p id="historyCount">Semua hasil tersimpan di browser ini saja.</p>
+</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary btn-sm" id="exportBtn"><i data-lucide="download"></i> Export JSON</button>
+<button class="btn btn-danger btn-sm" id="clearHistoryBtn"><i data-lucide="trash-2"></i> Bersihkan</button>
+</div>
+</div>
+<div class="history-toolbar">
+<div class="search-wrap">
+<i data-lucide="search"></i>
+<input class="form-input" id="historySearch" type="search" placeholder="Cari prompt atau tanggal" aria-label="Cari history">
+</div>
+<select class="form-select filter-select" id="historyFilter" aria-label="Filter tanggal">
+<option value="all">Semua waktu</option>
+<option value="today">Hari ini</option>
+<option value="week">7 hari</option>
+</select>
+</div>
+<div class="empty-state" id="historyEmpty" style="margin-top:12px">
+<i data-lucide="clock"></i>
+<h3>Belum ada riwayat</h3>
+<p>Hasil generate tersimpan otomatis beserta prompt dan parameternya.</p>
+</div>
+<div class="image-grid history" id="historyGrid" style="margin-top:12px;display:none"></div>
+</section>
+
+<section class="page" id="page-documentation" aria-labelledby="docTitle">
+<div class="doc-layout">
+<nav class="doc-toc" aria-label="Daftar isi">
+<div class="doc-toc-title">Daftar isi</div>
+<a href="#doc-start" class="active">Quick start</a>
+<a href="#doc-model">Menyiapkan model</a>
+<a href="#doc-token">Token akses</a>
+<a href="#doc-use">Hubungkan ke UI</a>
+<a href="#doc-trouble">Troubleshooting</a>
+</nav>
+<div class="doc-content">
+<div class="doc-section" id="doc-start">
+<div class="doc-section-head"><h3>Quick start</h3><p>Dari nol sampai bisa generate dalam satu perintah.</p></div>
+<div class="doc-body">
+<p>Syarat: Python 3.9 atau lebih baru, koneksi internet untuk instalasi awal dan unduhan model, serta ruang disk sekitar 10 GB untuk venv dan model pertama. GPU itu opsional, CPU tetap bisa generate walau lebih lambat.</p>
+<div class="code-block sm">
+<div class="code-label mono">Windows PowerShell</div>
+<pre>irm https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -OutFile tunnela.py; python tunnela.py</pre>
+<button data-copy="irm https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -OutFile tunnela.py; python tunnela.py" aria-label="Copy perintah Windows"><i data-lucide="copy"></i></button>
+</div>
+<div class="code-block sm">
+<div class="code-label mono">macOS / Linux</div>
+<pre>curl -fsSL https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -o tunnela.py && python3 tunnela.py</pre>
+<button data-copy="curl -fsSL https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -o tunnela.py && python3 tunnela.py" aria-label="Copy perintah macOS Linux"><i data-lucide="copy"></i></button>
+</div>
+<div class="code-block sm">
+<div class="code-label mono">Google Colab / Kaggle notebook</div>
+<pre>!curl -fsSL https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -o tunnela.py && python3 tunnela.py</pre>
+<button data-copy="!curl -fsSL https://raw.githubusercontent.com/Gaz20KKK/Tunnela/master/tunnela.py -o tunnela.py && python3 tunnela.py" aria-label="Copy perintah notebook Colab Kaggle"><i data-lucide="copy"></i></button>
+</div>
+<p>Apa yang dikerjakan skrip secara berurutan:</p>
+<ol>
+<li>Mendeteksi hardware: GPU NVIDIA, Apple Silicon MPS, atau CPU.</li>
+<li>Membuat virtualenv <span class="mono">.venv</span> supaya proyek tidak mencemari sistem.</li>
+<li>Menginstal PyTorch sesuai akselerator, lalu stack diffusers.</li>
+<li>Menanyakan link model, kemudian mengunduhnya dengan progress.</li>
+<li>Memuat model ke GPU. Kalau VRAM pas-pasan, CPU offload aktif otomatis.</li>
+<li>Menyalakan server API di port 7860 dan tunnel Cloudflare, lalu mencetak link <span class="mono">trycloudflare.com</span>.</li>
+</ol>
+<p>Tekan Ctrl+C untuk mematikan model, server, dan tunnel sekaligus. Jalankan lagi kapan saja dengan <span class="mono">python tunnela.py --model LINK</span>, atau <span class="mono">--update</span> untuk memperbarui skrip.</p>
+</div>
+</div>
+<div class="doc-section" id="doc-model">
+<div class="doc-section-head"><h3>Menyiapkan model</h3><p>Format link apa saja yang diterima skrip.</p></div>
+<div class="doc-body">
+<p>Saat diminta, tempel salah satu format berikut:</p>
+<ul>
+<li>Repo diffusers HuggingFace: <span class="mono">stabilityai/sd-turbo</span> atau alamat halamannya.</li>
+<li>File tunggal dari repo: link <span class="mono">blob/main/xxx.safetensors</span>.</li>
+<li>Civitai: buka halaman model, klik tombol Download kanan atas, salin alamatnya yang berformat <span class="mono">civitai.com/api/download/models/NOMOR</span>.</li>
+</ul>
+<p>Belum punya model? Tekan Enter dan pilih salah satu preset bawaan:</p>
+<ul>
+<li><strong>Ringan</strong>, <span class="mono">sd-turbo</span>: sekitar 2,5 GB, langkah 1 sampai 4, masih nyaman di CPU.</li>
+<li><strong>Seimbang</strong>, <span class="mono">sdxl-turbo fp16</span>: sekitar 6,9 GB, langkah 4 di resolusi 1024, enak mulai dari GPU 8 GB.</li>
+<li><strong>Terbaik</strong>, <span class="mono">FLUX.1-schnell</span>: sekitar 23,8 GB, lisensi Apache 2.0, kualitas paling tinggi tapi berat; GPU besar atau offload panjang.</li>
+</ul>
+<p>Keluarga turbo dan schnell dirancang untuk langkah sedikit dengan CFG rendah (1 atau 0). Notebook Colab dan Kaggle otomatis memakai environment bawaan tanpa membuat venv, jadi torch yang sudah terinstal tidak diunduh ulang.</p>
+<p>Checkpoint single-file dipetakan otomatis. Nama atau base model yang mengandung XL, Illustrious, atau Pony pakai arsitektur SDXL. Selebihnya default Stable Diffusion. Skrip bertanya kalau ragu.</p>
+<p>Model yang sudah diunduh tersimpan di folder <span class="mono">models/</span>. Jalankan skrip lagi dan tekan Enter untuk memakainya tanpa mengunduh ulang.</p>
+</div>
+</div>
+<div class="doc-section" id="doc-token">
+<div class="doc-section-head"><h3>Token akses</h3><p>Kapan token dibutuhkan dan bagaimana amannya.</p></div>
+<div class="doc-body">
+<ul>
+<li>HuggingFace: repo gated minta access token scope Read dari <span class="mono">huggingface.co/settings/tokens</span>. Variabel lingkungan <span class="mono">HF_TOKEN</span> juga dibaca.</li>
+<li>Civitai: API key dari <span class="mono">civitai.com/user/account</span>. Unduhan via API saat ini umumnya wajib key meski filenya publik.</li>
+</ul>
+<p>Skrip meminta token hanya saat ditolak 401 atau 403. Input memakai getpass sehingga tidak tampil di layar dan tidak masuk riwayat shell. Token hanya hidup selama proses berjalan dan tidak pernah ditulis ke disk.</p>
+</div>
+</div>
+<div class="doc-section" id="doc-use">
+<div class="doc-section-head"><h3>Hubungkan ke UI</h3><p>Paste link, uji, generate.</p></div>
+<div class="doc-body">
+<ol>
+<li>Buka halaman Connect, tempel link trycloudflare dari terminal.</li>
+<li>Tekan Uji koneksi. Bila sukses lanjut ke Workspace.</li>
+<li>Tulis prompt, atur parameter kalau perlu, Generate.</li>
+</ol>
+<p>Sebelum backend terhubung, Workspace jalan dalam mode demo dengan gambar placeholder agar kamu bisa mencoba antarmuka. Shortcut Ctrl Enter juga berfungsi.</p>
+</div>
+</div>
+<div class="doc-section" id="doc-trouble">
+<div class="doc-section-head"><h3>Troubleshooting</h3><p>Masalah yang paling sering muncul.</p></div>
+<div class="accordion" style="margin:16px">
+<div class="accordion-item">
+<button class="accordion-trigger">Unduhan HuggingFace ditolak 401 atau repo gated <i data-lucide="chevron-down"></i></button>
+<div class="accordion-panel">Buat access token scope Read di huggingface.co/settings/tokens lalu tempel saat skrip bertanya. Setelah itu cukup jalankan lagi perintah yang sama.</div>
+</div>
+<div class="accordion-item">
+<button class="accordion-trigger">CUDA out of memory saat generate <i data-lucide="chevron-down"></i></button>
+<div class="accordion-panel">Turunkan resolusi atau batch. Skrip sudah memakai CPU offload otomatis kalau free VRAM tidak cukup, tapi resolusi 1024 dengan batch besar tetap bisa melebihi kapasitas.</div>
+</div>
+<div class="accordion-item">
+<button class="accordion-trigger">Download Civitai gagal 401 atau 403 <i data-lucide="chevron-down"></i></button>
+<div class="accordion-panel">Masukkan API key dari civitai.com/user/account saat diminta. Key gratis untuk semua akun.</div>
+</div>
+<div class="accordion-item">
+<button class="accordion-trigger">URL trycloudflare tidak muncul <i data-lucide="chevron-down"></i></button>
+<div class="accordion-panel">Pastikan internet keluar bebas dan firewall tidak memblokir cloudflared. Cloudflare memberlakukan rate limit pada quick tunnel, tunggu beberapa menit lalu jalankan lagi.</div>
+</div>
+<div class="accordion-item">
+<button class="accordion-trigger">Generasi pertama terasa lama <i data-lucide="chevron-down"></i></button>
+<div class="accordion-panel">Wajar. Warm-up dan kompilasi kernel hanya terjadi sekali di awal. Pada murni CPU, resolusi rendah dengan langkah sedikit adalah titik mulai yang baik.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<footer class="foot">
+<span>Tunnela v1.0.0. Frontend statis, backend resmi via tunnela.py.</span>
+<span class="foot-links"><a href="#" data-nav="documentation">Docs</a><a href="https://github.com/Gaz20KKK/Tunnela" target="_blank" rel="noopener">GitHub</a></span>
+</footer>
+</div>
+</div>
+
+<nav class="mobile-nav" aria-label="Navigasi mobile">
+<button class="mobile-nav-item active" data-nav="home" aria-label="Home"><i data-lucide="house"></i><span>Home</span></button>
+<button class="mobile-nav-item" data-nav="connect" aria-label="Connect"><i data-lucide="plug"></i><span>Connect</span></button>
+<button class="mobile-nav-item" data-nav="workspace" aria-label="Workspace"><i data-lucide="panels-top-left"></i><span>Workspace</span></button>
+<button class="mobile-nav-item" data-nav="history" aria-label="History"><i data-lucide="clock"></i><span>History</span></button>
+<button class="mobile-nav-item" data-nav="documentation" aria-label="Docs"><i data-lucide="book-open"></i><span>Docs</span></button>
+</nav>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+<div class="modal" id="lightboxModal" aria-hidden="true">
+<div class="modal-backdrop" data-close="lightboxModal"></div>
+<div class="modal-card">
+<div class="modal-head">
+<div class="modal-title">Preview</div>
+<button class="icon-btn" data-close="lightboxModal" aria-label="Tutup preview"><i data-lucide="x"></i></button>
+</div>
+<div class="modal-body col-gap">
+<img class="lightbox-img" id="lightboxImg" alt="Preview hasil generate">
+<div id="lightboxPrompt" class="lb-prompt"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-secondary btn-sm" id="lightboxDownload"><i data-lucide="download"></i> Download</button>
+<button class="btn btn-secondary btn-sm" id="lightboxCopy"><i data-lucide="copy"></i> Copy prompt</button>
+<button class="btn btn-secondary btn-sm" id="lightboxUse"><i data-lucide="refresh-cw"></i> Use prompt</button>
+</div>
+</div>
+</div>
+</div>
+<div class="modal" id="historyModal" aria-hidden="true">
+<div class="modal-backdrop" data-close="historyModal"></div>
+<div class="modal-card">
+<div class="modal-head">
+<div class="modal-title">Detail history</div>
+<button class="icon-btn" data-close="historyModal" aria-label="Tutup detail"><i data-lucide="x"></i></button>
+</div>
+<div class="modal-body" id="historyModalBody"></div>
+<div class="modal-foot">
+<button class="btn btn-ghost" data-close="historyModal">Tutup</button>
+<button class="btn btn-primary" id="historyReuseBtn"><i data-lucide="refresh-cw"></i> Generate ulang</button>
+</div>
+</div>
+</div>
+<div class="modal" id="confirmModal" aria-hidden="true">
+<div class="modal-backdrop" data-close="confirmModal"></div>
+<div class="modal-card sm">
+<div class="modal-head"><div class="modal-title" id="confirmTitle">Konfirmasi</div><button class="icon-btn" data-close="confirmModal" aria-label="Tutup"><i data-lucide="x"></i></button></div>
+<div class="modal-body"><div id="confirmDesc" class="confirm-desc"></div></div>
+<div class="modal-foot"><button class="btn btn-ghost" data-close="confirmModal">Batal</button><button class="btn btn-danger" id="confirmAction">Hapus</button></div>
+</div>
+</div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
