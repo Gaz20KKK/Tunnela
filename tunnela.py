@@ -88,12 +88,12 @@ def log(tag: str, msg: str):
         print(f"[{datetime.now().strftime('%H:%M:%S')}] [{tag:<6}] {msg}", flush=True)
 
 
-def log_ok(msg: str):
-    log("setup", f"{GREEN}ok     {RST}{msg}" if TTY else f"ok   {msg}")
+def log_ok(msg: str, tag: str = "setup"):
+    log(tag, f"{GREEN}ok     {RST}{msg}" if TTY else f"ok   {msg}")
 
 
-def log_warn(msg: str):
-    log("setup", f"{YELLOW}catatan{RST} {msg}" if TTY else f"note {msg}")
+def log_warn(msg: str, tag: str = "setup"):
+    log(tag, f"{YELLOW}catatan{RST} {msg}" if TTY else f"note {msg}")
 
 
 def section(label: str = ""):
@@ -763,7 +763,7 @@ def load_pipeline(cls_name: str, src: str, is_file: bool, dev: dict):
                 pipe = build(alt)
             except Exception:
                 raise e
-    log_ok(f"bobot dimuat dalam {time.time() - t0:.0f}s")
+    log_ok(f"bobot dimuat dalam {time.time() - t0:.0f}s", tag="model")
 
     try:
         params = sum(p.numel() * p.element_size() for p in getattr(pipe, "components", {}).values())
@@ -974,6 +974,21 @@ CF_VERSION = "latest"
 CF_RELEASES = "https://github.com/cloudflare/cloudflared/releases/latest/download/"
 
 
+def cloudflared_asset(system: str, machine: str) -> str | None:
+    assets = {
+        ("windows", "amd64"): "cloudflared-windows-amd64.exe",
+        ("windows", "arm64"): "cloudflared-windows-arm64.exe",
+        ("linux", "amd64"): "cloudflared-linux-amd64",
+        ("linux", "arm64"): "cloudflared-linux-arm64",
+        ("darwin", "amd64"): "cloudflared-darwin-amd64.tgz",
+        ("darwin", "arm64"): "cloudflared-darwin-arm64.tgz",
+    }
+    arch = "amd64" if machine in ("amd64", "x86_64", "x86-64") else (
+        "arm64" if machine in ("arm64", "aarch64") else ""
+    )
+    return assets.get((system, arch))
+
+
 def ensure_cloudflared() -> str | None:
     found = shutil.which("cloudflared")
     if found:
@@ -982,16 +997,7 @@ def ensure_cloudflared() -> str | None:
     TOOLS_DIR.mkdir(exist_ok=True)
     system = platform.system().lower()
     machine = platform.machine().lower()
-    assets = {
-        ("windows", "amd64"): "cloudflared-windows-amd64.exe",
-        ("windows", "arm64"): "cloudflared-windows-arm64.exe",
-        ("linux", "x86_64"): "cloudflared-linux-amd64",
-        ("linux", "aarch64"): "cloudflared-linux-arm64",
-        ("darwin", "amd64"): "cloudflared-darwin-amd64.tgz",
-        ("darwin", "arm64"): "cloudflared-darwin-arm64.tgz",
-    }
-    arch = "amd64" if machine in ("amd64", "x86_64") else ("arm64" if machine in ("arm64", "aarch64") else "")
-    asset = assets.get((system, arch)) if arch else None
+    asset = cloudflared_asset(system, machine)
     if not asset:
         log("tunnel", f"tidak ada cloudflared siap unduh untuk {system}/{machine}")
         return None
@@ -1206,14 +1212,17 @@ def acquire_model(args, dev: dict) -> tuple[str, str]:
             if any(k in local.stem.lower() for k in ("xl", "illustrious", "pony"))
             else ""
         )
-        return cls_guess, str(local), True
+        return cls_guess, local.name, str(local), True
 
-    if args.model in (None, "") and args.preset not in (None, ""):
+    is_preset = args.model in (None, "") and args.preset not in (None, "")
+    if is_preset:
         pinfo = next(p for p in PRESETS if p["key"] == (args.preset or ""))
         spec = dict(pinfo["spec"])
+        label = pinfo["name"]
         log("model", f"preset {pinfo['key']}: {pinfo['name']} ({pinfo['size']})")
     else:
         spec = parse_model_source(args.model)
+        label = spec.get("filename") or spec.get("repo_id") or args.model
     if spec["source"] == "unknown":
         die(f"Tidak bisa membaca alamat model: {args.model}")
 
@@ -1242,7 +1251,7 @@ def acquire_model(args, dev: dict) -> tuple[str, str]:
             idx = path / "model_index.json"
             if idx.exists():
                 cls_name = json.loads(idx.read_text(encoding="utf-8")).get("_class_name", "")
-        return cls_name, str(path), Path(path).is_file()
+        return cls_name, label, str(path), Path(path).is_file()
 
     log("model", "sumber Civitai memerlukan API key untuk mengunduh file apa pun")
     log("model", "ambil key gratis di https://civitai.com/user/account")
@@ -1275,7 +1284,7 @@ def acquire_model(args, dev: dict) -> tuple[str, str]:
 
     log("model", f"base model Civitai: {ver['base'] or 'tidak tercantum'}")
     cls_name = ver["cls_hint"] if "flux" not in ver["base"] else "FluxPipeline"
-    return cls_name, str(dest), True
+    return cls_name, label or ver["name"], str(dest), True
 
 
 def main():
@@ -1339,7 +1348,7 @@ def main():
 
     MODELS_DIR.mkdir(exist_ok=True)
 
-    cls_name, src, is_file = acquire_model(gp, dev)
+    cls_name, label, src, is_file = acquire_model(gp, dev)
     if not cls_name and is_file:
         stem = Path(src).stem.lower()
         if any(k in stem for k in ("xl", "illustrious", "pony", "noob", "playground")):
@@ -1350,7 +1359,7 @@ def main():
         cls_name = pick_class_interactive() if TTY else "StableDiffusionPipeline"
     section("memuat model")
     pipe = load_pipeline(cls_name, src, is_file, dev)
-    display_name = Path(src).name if is_file else cls_name.replace("Pipeline", "").replace("StableDiffusionXL", "SDXL-").replace("StableDiffusion", "SD-")
+    display_name = label
     APP["pipe"] = pipe
     APP["info"] = {
         "model": display_name,
